@@ -1,11 +1,12 @@
+// @ts-ignore
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 const gltfLoader = new GLTFLoader();
 const heartElement = "resources/models/heart/scene.gltf";
 
-const createHearts = (offset: number, callback: (heartModelCB) => void) => {
+const createHearts = (offset: number, callback: (heartModelCB: any) => void) => {
   gltfLoader.load(
     heartElement,
-    (gltf) => {
+    (gltf: any) => {
       let heartModel;
       heartModel = gltf.scene;
       heartModel.scale.set(0.2, 0.2, 0.2);
@@ -14,7 +15,7 @@ const createHearts = (offset: number, callback: (heartModelCB) => void) => {
       callback(heartModel);
     },
     undefined,
-    (error) => {
+    (error: string) => {
       console.error(error);
     }
   );

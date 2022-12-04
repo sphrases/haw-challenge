@@ -1,7 +1,10 @@
 import * as THREE from "three";
+// @ts-ignore
 import { TWEEN } from "three/examples/jsm/libs/tween.module.min";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+// @ts-ignore
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { createFloorTile } from "./sceneobjects/createFloorTile";
 import "./style.css";
 import { addCollisionElements } from "./sceneobjects/addCollisionElements";
@@ -96,7 +99,7 @@ let boatGroup = new THREE.Group();
 boatGroup.add(boatCube);
 gltfLoader.load(
   boatElement,
-  (gltf) => {
+  (gltf: any) => {
     boatModel = gltf.scene;
     boatModel.rotation.y = 3.15;
     boatModel.scale.set(0.01, 0.01, 0.01);
@@ -106,7 +109,7 @@ gltfLoader.load(
     boatGroup.add(boatModel);
   },
   undefined,
-  (error) => {
+  (error: string) => {
     console.error(error);
   }
 );
@@ -121,12 +124,13 @@ scene.add(pointLightHelper);
 
 /** Heart model */
 
-let heartModel1;
-let heartModel2;
-let heartModel3;
+let heartModel1: any;
+let heartModel2: any;
+let heartModel3: any;
 
 createHearts(0, (heartModelNew) => {
   heartModel1 = heartModelNew;
+  console.log(typeof heartModel1);
   camera.add(heartModel1);
 });
 
@@ -166,14 +170,6 @@ const movementHandler = (evt: KeyboardEvent) => {
   }
 };
 
-const updateCamera = () => {
-  const objectPosition = new Vector3();
-  boatGroup.getWorldPosition(objectPosition);
-
-  console.log("objectPosition", objectPosition);
-  camera.position.copy(objectPosition).add(cameraOffset);
-};
-
 const moveWorldForward = () => {
   boatGroup.position.z -= movementSpeed;
   camera.position.z -= movementSpeed;
@@ -185,7 +181,7 @@ const moveForward = () => {
   new TWEEN.Tween(boatGroup.position)
     .to({ z: newPosZ }, 1000)
     .easing(TWEEN.Easing.Quadratic.Out)
-    .onUpdate((object) => {
+    .onUpdate((object: Vector3) => {
       boatGroup.position.z = object.z;
       camera.position.z = object.z + cameraOffset.z;
       controls.target.copy(object);
@@ -204,7 +200,7 @@ const moveLeft = () => {
   new TWEEN.Tween(boatGroup.position)
     .to({ x: newPosX }, 1000)
     .easing(TWEEN.Easing.Quadratic.Out)
-    .onUpdate((object) => {
+    .onUpdate((object: Vector3) => {
       boatGroup.position.x = object.x;
       camera.position.x = object.x + cameraOffset.x;
       controls.target.copy(object);
@@ -217,7 +213,7 @@ const moveRight = () => {
   new TWEEN.Tween(boatGroup.position)
     .to({ x: newPosX }, 1000)
     .easing(TWEEN.Easing.Quadratic.Out)
-    .onUpdate((object) => {
+    .onUpdate((object: Vector3) => {
       boatGroup.position.x = object.x;
       camera.position.x = object.x + cameraOffset.x;
       controls.target.copy(object);
@@ -304,9 +300,11 @@ console.log("boatModel", boatModel);
 const animate = () => {
   requestAnimationFrame(animate);
 
-  boatBoundingBox
-    .copy(boatCube.geometry.boundingBox)
-    .applyMatrix4(boatCube.matrixWorld);
+  if (boatCube.geometry.boundingBox instanceof Box3) {
+    boatBoundingBox
+      .copy(boatCube.geometry.boundingBox)
+      .applyMatrix4(boatCube.matrixWorld);
+  }
 
   spawnEnemies();
   checkCollision();

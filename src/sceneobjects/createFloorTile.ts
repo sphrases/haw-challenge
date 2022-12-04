@@ -1,4 +1,5 @@
 import {
+  CanvasTexture,
   Mesh,
   MeshStandardMaterial,
   PlaneGeometry,
@@ -8,8 +9,6 @@ import {
 } from "three";
 
 const waterTexture = "resources/textures/Water_001_SD/Water_001_COLOR.jpg";
-const waterDisplacementMap =
-  "resources/textures/Water_001_SD/Water_001_DISP.png";
 
 const createFloorTile = () => {
   let texture = new TextureLoader().load(waterTexture);
@@ -81,8 +80,8 @@ const SpriteSheetTexture = (
       x = (count % framesX) * frameWidth;
       y = ((count / framesX) | 0) * frameHeight;
 
-      ctx.clearRect(0, 0, frameWidth, frameHeight);
-      ctx.drawImage(
+      ctx?.clearRect(0, 0, frameWidth, frameHeight);
+      ctx?.drawImage(
         img,
         x,
         y,
