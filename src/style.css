@@ -43,4 +43,5 @@ canvas {
   text-align: center;
   flex-grow: 2;
   text-decoration: none;
+  user-select: none;
 }
