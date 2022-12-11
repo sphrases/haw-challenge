@@ -7,9 +7,40 @@
   font-style: normal;
 }
 
-
 canvas {
   position: fixed;
   top: 0;
   left: 0;
+}
+
+#cssWrapper {
+  z-index: 1000;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 100vh;
+  width: 100%;
+  pointer-events: none;
+}
+
+#controlsWrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 50vh;
+  width: 100vw;
+  display: flex;
+}
+
+.controlButton {
+  pointer-events: initial;
+  background-color: transparent;
+  border-color: brown;
+  border-width: 0px;
+  padding: 14px 28px;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+  flex-grow: 2;
+  text-decoration: none;
 }

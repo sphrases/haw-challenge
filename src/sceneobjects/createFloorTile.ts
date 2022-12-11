@@ -12,11 +12,11 @@ const waterTexture = "resources/textures/Water_001_SD/Water_001_COLOR.jpg";
 
 const createFloorTile = () => {
   let texture = new TextureLoader().load(waterTexture);
-  texture.repeat.set(300, 300);
+  texture.repeat.set(30, 3000);
   texture.wrapT = RepeatWrapping;
   texture.wrapS = RepeatWrapping;
 
-  let planeGeometry = new PlaneGeometry(10000, 10000);
+  let planeGeometry = new PlaneGeometry(600, 60000);
   let material = new MeshStandardMaterial({
     map: texture,
   });

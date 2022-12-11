@@ -10,6 +10,11 @@ import "./style.css";
 import { addCollisionElements } from "./sceneobjects/addCollisionElements";
 import { Box3, BoxGeometry, Mesh, MeshLambertMaterial, Vector3 } from "three";
 import { createHearts } from "./sceneobjects/createHearts";
+import updateBoatRoutine, {
+  MovementDirections,
+  updateBoatSway,
+  updateCameraPos,
+} from "./sideRoutines/updateBoatRoutine";
 
 const boatElement = "resources/models/fishing_boat/scene.gltf";
 const skyBoxTexture = "resources/textures/skyboxes/darkcartoon.jpeg";
@@ -23,6 +28,12 @@ const maxSpeed = 20;
 let movementSpeed = 10;
 let acceleration = 0.05;
 let moving = false;
+let currentMovementDirections: MovementDirections = {
+  Left: false,
+  Right: false,
+  Forwards: false,
+  Backwards: false,
+};
 
 /** Spawning */
 let spawnDelay = 1.2;
@@ -36,7 +47,7 @@ let collisionDebouncer = false;
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(
+let camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
@@ -94,7 +105,7 @@ const boatCube = new Mesh(
 
 const boatBoundingBox = new Box3(new Vector3(), new Vector3());
 boatBoundingBox.setFromObject(boatCube);
-let boatModel; // gltf
+let boatModel: any; // gltf
 let boatGroup = new THREE.Group();
 boatGroup.add(boatCube);
 gltfLoader.load(
@@ -113,6 +124,9 @@ gltfLoader.load(
     console.error(error);
   }
 );
+
+boatGroup.position.set(0, 0, -10);
+
 scene.add(boatGroup);
 
 /** Boat light */
@@ -144,14 +158,15 @@ createHearts(3, (heartModelNew) => {
   camera.add(heartModel3);
 });
 
-const movementHandler = (evt: KeyboardEvent) => {
+const movementHandler = (evt: KeyboardEvent, dir: "up" | "dn") => {
+  const movementCopy = { ...currentMovementDirections };
+
   switch (evt.key) {
     case "s":
-      moveBack();
+      movementCopy.Backwards = dir === "dn";
       break;
     case "w":
-      moving = true;
-      moveForward();
+      movementCopy.Forwards = dir === "dn";
       break;
     case "q":
       rotLeft();
@@ -160,66 +175,19 @@ const movementHandler = (evt: KeyboardEvent) => {
       rotRight();
       break;
     case "a":
-      moveLeft();
+      movementCopy.Left = dir === "dn";
       break;
     case "d":
-      moveRight();
+      movementCopy.Right = dir === "dn";
+
       break;
     case "f":
       break;
   }
+
+  currentMovementDirections = movementCopy;
 };
 
-const moveWorldForward = () => {
-  boatGroup.position.z -= movementSpeed;
-  camera.position.z -= movementSpeed;
-  controls.target.copy(boatGroup.position);
-};
-
-const moveForward = () => {
-  const newPosZ = boatGroup.position.z - movementSpeed;
-  new TWEEN.Tween(boatGroup.position)
-    .to({ z: newPosZ }, 1000)
-    .easing(TWEEN.Easing.Quadratic.Out)
-    .onUpdate((object: Vector3) => {
-      boatGroup.position.z = object.z;
-      camera.position.z = object.z + cameraOffset.z;
-      controls.target.copy(object);
-    })
-    .start();
-};
-
-const moveBack = () => {
-  boatGroup.position.z += movementSpeed;
-  camera.position.z += movementSpeed;
-  controls.target.copy(boatGroup.position);
-};
-
-const moveLeft = () => {
-  const newPosX = boatGroup.position.x - movementSpeed * 10;
-  new TWEEN.Tween(boatGroup.position)
-    .to({ x: newPosX }, 1000)
-    .easing(TWEEN.Easing.Quadratic.Out)
-    .onUpdate((object: Vector3) => {
-      boatGroup.position.x = object.x;
-      camera.position.x = object.x + cameraOffset.x;
-      controls.target.copy(object);
-    })
-    .start();
-};
-
-const moveRight = () => {
-  const newPosX = boatGroup.position.x + movementSpeed * 10;
-  new TWEEN.Tween(boatGroup.position)
-    .to({ x: newPosX }, 1000)
-    .easing(TWEEN.Easing.Quadratic.Out)
-    .onUpdate((object: Vector3) => {
-      boatGroup.position.x = object.x;
-      camera.position.x = object.x + cameraOffset.x;
-      controls.target.copy(object);
-    })
-    .start();
-};
 const rotLeft = () => {
   boatGroup.rotation.y += Math.PI / 60;
 };
@@ -287,18 +255,61 @@ const checkCollision = () => {
 
 const init = () => {
   clock.start();
-  window.addEventListener("keydown", movementHandler, false);
+  window.addEventListener("keydown", (e) => movementHandler(e, "dn"), false);
   window.addEventListener(
     "keyup",
-    () => {
-      moving = false;
+    (e) => {
+      movementHandler(e, "up");
     },
     false
   );
+
+  const leftButton = document.getElementById("leftButton");
+  if (leftButton) {
+    leftButton.ontouchstart = () => {
+      const movementCopy = { ...currentMovementDirections };
+      movementCopy.Left = true;
+      currentMovementDirections = movementCopy;
+    };
+    leftButton.ontouchend = () => {
+      const movementCopy = { ...currentMovementDirections };
+      movementCopy.Left = false;
+      currentMovementDirections = movementCopy;
+    };
+    leftButton.ontouchcancel = () => {
+      const movementCopy = { ...currentMovementDirections };
+      movementCopy.Left = false;
+      currentMovementDirections = movementCopy;
+    };
+  }
+
+  const rightButton = document.getElementById("rightButton");
+  if (rightButton) {
+    rightButton.ontouchstart = () => {
+      const movementCopy = { ...currentMovementDirections };
+      movementCopy.Right = true;
+      currentMovementDirections = movementCopy;
+    };
+    rightButton.ontouchend = () => {
+      const movementCopy = { ...currentMovementDirections };
+      movementCopy.Right = false;
+      currentMovementDirections = movementCopy;
+    };
+    rightButton.ontouchcancel = () => {
+      const movementCopy = { ...currentMovementDirections };
+      movementCopy.Right = false;
+      currentMovementDirections = movementCopy;
+    };
+  }
 };
-console.log("boatModel", boatModel);
+
 const animate = () => {
   requestAnimationFrame(animate);
+
+  boatModel = updateBoatSway(boatModel);
+  boatGroup = updateBoatRoutine(boatGroup, currentMovementDirections);
+  camera = updateCameraPos(camera);
+  controls.target.copy(boatGroup.position);
 
   if (boatCube.geometry.boundingBox instanceof Box3) {
     boatBoundingBox
@@ -308,7 +319,6 @@ const animate = () => {
 
   spawnEnemies();
   checkCollision();
-  moveWorldForward();
   TWEEN.update();
 
   accelerateMovementSpeed();
