@@ -7,7 +7,33 @@
   font-style: normal;
 }
 
-canvas {
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#faceTrackingWrapper {
+  opacity: 0.4;
+
+  z-index: 1001;
+  right: 0;
+  position: absolute;
+  display: flex;
+}
+
+#faceTrackingVideo {
+  transform: scale(-1, 1);
+  margin: 0;
+  padding: 0;
+}
+
+#faceTrackingCanvas {
+  z-index: 1;
+  position: absolute;
+  transform: scale(-1, 1);
+}
+
+#bgCanvas {
   position: fixed;
   top: 0;
   left: 0;

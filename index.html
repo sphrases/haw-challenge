@@ -8,8 +8,13 @@
     <title>HAW-Benjamins</title>
   </head>
   <body>
-    <canvas id="bg"></canvas>
     <main>
+      <div id="faceTrackingWrapper">
+        <canvas id="faceTrackingCanvas"></canvas>
+        <!--- TODO: compute Video Size on runtime -->
+        <video id="faceTrackingVideo" autoplay muted></video>
+      </div>
+      <canvas id="bgCanvas"></canvas>
       <div id="cssWrapper">
         <div id="debugSection">debug:</div>
         aad

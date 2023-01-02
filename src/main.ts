@@ -15,6 +15,7 @@ import updateBoatRoutine, {
   updateBoatSway,
   updateCameraPos,
 } from "./sideRoutines/updateBoatRoutine";
+import "./sideRoutines/initializeFacetracking";
 
 const boatElement = "resources/models/fishing_boat/scene.gltf";
 const skyBoxTexture = "resources/textures/skyboxes/darkcartoon.jpeg";
@@ -56,7 +57,7 @@ let camera = new THREE.PerspectiveCamera(
 
 /** Renderer */
 const renderer = new THREE.WebGLRenderer({
-  canvas: document.querySelector("#bg") || undefined,
+  canvas: document.querySelector("#bgCanvas") || undefined,
   antialias: true,
 });
 
@@ -114,9 +115,6 @@ gltfLoader.load(
     boatModel = gltf.scene;
     boatModel.rotation.y = 3.15;
     boatModel.scale.set(0.01, 0.01, 0.01);
-
-    console.log("boardBoundingBox", boatBoundingBox);
-
     boatGroup.add(boatModel);
   },
   undefined,
@@ -134,7 +132,7 @@ const pointLight = new THREE.PointLight("#ffffff", 0.8);
 const pointLightHelper = new THREE.PointLightHelper(pointLight);
 pointLight.position.set(0, 5, 14);
 boatGroup.add(pointLight);
-scene.add(pointLightHelper);
+if (debug) scene.add(pointLightHelper);
 
 /** Heart model */
 
@@ -148,12 +146,12 @@ createHearts(0, (heartModelNew) => {
   camera.add(heartModel1);
 });
 
-createHearts(1.5, (heartModelNew) => {
+createHearts(1.2, (heartModelNew) => {
   heartModel2 = heartModelNew;
   camera.add(heartModel2);
 });
 
-createHearts(3, (heartModelNew) => {
+createHearts(2.4, (heartModelNew) => {
   heartModel3 = heartModelNew;
   camera.add(heartModel3);
 });
@@ -209,8 +207,6 @@ const accelerateMovementSpeed = () => {
 const spawnEnemies = () => {
   const elapsed = clock.getElapsedTime();
   if (elapsed - spawnDelay > lastSpawn) {
-    console.log("spawn");
-
     const collisionElements = addCollisionElements(boatGroup);
     scene.add(collisionElements.collisionElements);
     enemyCollidersArray = [
@@ -264,6 +260,27 @@ const init = () => {
     false
   );
 
+  // Type should be CustomEvent, but isn'T recognized correctly
+  document.addEventListener("trackedMovement", (e: any) => {
+    console.log("event caught");
+    console.log("e", e);
+    const movementCopy = { ...currentMovementDirections };
+
+    switch (e.detail.dir) {
+      case "left":
+        movementCopy.Left = true;
+        break;
+      case "right":
+        movementCopy.Right = true;
+        break;
+      default:
+        movementCopy.Left = false;
+        movementCopy.Right = false;
+        break;
+    }
+    currentMovementDirections = movementCopy;
+  });
+
   const leftButton = document.getElementById("leftButton");
   if (leftButton) {
     leftButton.ontouchstart = () => {
@@ -309,7 +326,8 @@ const animate = () => {
   boatModel = updateBoatSway(boatModel);
   boatGroup = updateBoatRoutine(boatGroup, currentMovementDirections);
   camera = updateCameraPos(camera);
-  controls.target.copy(boatGroup.position);
+  // @ts-ignore
+  controls.target.copy({ ...boatGroup.position, y: boatGroup.position.y + 7 });
 
   if (boatCube.geometry.boundingBox instanceof Box3) {
     boatBoundingBox

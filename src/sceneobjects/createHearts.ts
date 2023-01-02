@@ -10,7 +10,7 @@ const createHearts = (offset: number, callback: (heartModelCB: any) => void) => 
       let heartModel;
       heartModel = gltf.scene;
       heartModel.scale.set(0.2, 0.2, 0.2);
-      heartModel.position.set(3, 1 * offset, -10);
+      heartModel.position.set(2, -2 + offset, -10);
       heartModel.rotation.set(0, 2, 0);
       callback(heartModel);
     },

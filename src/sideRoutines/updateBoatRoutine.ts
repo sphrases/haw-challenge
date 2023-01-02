@@ -1,5 +1,6 @@
 import * as THREE from "three";
 const debug = true;
+const disableForwardMovement = false;
 
 type Directions = "Forwards" | "Backwards" | "Left" | "Right";
 
@@ -23,9 +24,9 @@ let swayIndex = 0;
 
 // Movement
 const maxSpeed = 5;
-const accelerationMultiplier = 0.001;
+const accelerationMultiplier = 0.0005;
 let worldMovementSpeed = 0.6;
-const worldSpeedMultiplier = 0.0008;
+const worldSpeedMultiplier = 0.0002;
 
 let SpeedValues: SpeedValueType = {
   Right: 0,
@@ -107,11 +108,7 @@ const updateBoatRoutine = (
   boatGroupPassed: THREE.Group,
   currentMovementDirections: MovementDirections
 ) => {
-  // console.log("currentMovementDirections", currentMovementDirections);
   let boatGroup = boatGroupPassed;
-  // console.log("swayIndex", swayIndex);
-
-  // console.log("boatGroup", boatGroup);
 
   speedoMeter("Left", currentMovementDirections.Left);
   speedoMeter("Right", currentMovementDirections.Right);
@@ -122,15 +119,19 @@ const updateBoatRoutine = (
     printDebugSpeeds();
   }
 
-  SpeedValues.Forwards = worldMovementSpeed;
+  if (!disableForwardMovement) {
+    SpeedValues.Forwards = worldMovementSpeed;
+  }
 
   boatGroup.position.z -= SpeedValues.Forwards; //SpeedValues.Forwards;
   boatGroup.position.z += SpeedValues.Backwards;
   boatGroup.position.x -= SpeedValues.Left;
   boatGroup.position.x += SpeedValues.Right;
+
   if (worldMovementSpeed < maxSpeed) {
     worldMovementSpeed += worldSpeedMultiplier;
   }
+
   return boatGroup;
 };
 
