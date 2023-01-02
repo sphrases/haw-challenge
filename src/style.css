@@ -12,13 +12,20 @@ body {
   padding: 0;
 }
 
+#faceTrackingWrapperContainer {
+  z-index: 1001;
+  width: 100vw;
+  align-content: center;
+  justify-content: center;
+  position: absolute;
+}
+
 #faceTrackingWrapper {
   opacity: 0.4;
-
-  z-index: 1001;
-  right: 0;
   position: absolute;
-  display: flex;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, 0);
 }
 
 #faceTrackingVideo {
