@@ -7,7 +7,7 @@ This is my entry as the programming task for the digital reality masters program
 
 ### Approach
 I set myself the challenge to not rely on frameworks like unity, as I have used it in the past and have heard good things about three.js.
-This demonstration is meant to show my coding abilities, rather then my skills in 3d modelling or in game development engines like unity. 
+This demonstration is meant to show my coding abilities, rather than my skills in 3d modelling or in game development engines like unity.
 
 To keep the project flexible, I decided to split the game logic and the control logic into two separate parts. 
 The game just receives input from either the keyboard, or later the face tracking.
