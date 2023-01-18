@@ -1,3 +1,5 @@
+@import "/public/resources/otherStyles/button3.css";
+
 :root {
   --dark-bg: rgba(15, 15, 15, 0.95);
   --spacing: 350px;
@@ -10,6 +12,55 @@
 body {
   margin: 0;
   padding: 0;
+}
+
+#startDialogWrapper {
+  display: none;
+}
+
+#gameOverWrapper {
+  display: flex;
+}
+
+.startDialogWrapper {
+  z-index: 2000;
+  position: absolute;
+  top: 0;
+  flex-direction: column;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur();
+}
+
+.startDialogContentWrapper {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+}
+
+.startDialog {
+  width: 50%;
+  display: block;
+  background-color: #e1f7ff;
+  padding: 20px;
+  border-radius: 25px;
+}
+
+.startDialogTitle {
+  color: #0D436A;
+  font-size: 64px;
+  margin: 10px 10px 0px;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.startDialogText {
+  color: #0D436A;
+  font-size: 32px;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+#gameWrapper {
 }
 
 #faceTrackingWrapperContainer {
@@ -54,27 +105,4 @@ body {
   height: 100vh;
   width: 100%;
   pointer-events: none;
-}
-
-#controlsWrapper {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  height: 50vh;
-  width: 100vw;
-  display: flex;
-}
-
-.controlButton {
-  pointer-events: initial;
-  background-color: transparent;
-  border-color: brown;
-  border-width: 0px;
-  padding: 14px 28px;
-  font-size: 16px;
-  cursor: pointer;
-  text-align: center;
-  flex-grow: 2;
-  text-decoration: none;
-  user-select: none;
 }

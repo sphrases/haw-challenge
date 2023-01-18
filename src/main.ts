@@ -1,39 +1,42 @@
 import * as THREE from "three";
 // @ts-ignore
-import { TWEEN } from "three/examples/jsm/libs/tween.module.min";
-// @ts-ignore
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { createFloorTile } from "./sceneobjects/createFloorTile";
 import "./style.css";
-import { addCollisionElements } from "./sceneobjects/addCollisionElements";
+import {
+  addCollisionElements,
+  loadCollisionEnemyMeshes,
+} from "./sceneobjects/addCollisionElements";
 import { Box3, BoxGeometry, Mesh, MeshLambertMaterial, Vector3 } from "three";
 import { createHearts } from "./sceneobjects/createHearts";
 import updateBoatRoutine, {
-  MovementDirections,
   updateBoatSway,
   updateCameraPos,
 } from "./sideRoutines/updateBoatRoutine";
 import "./sideRoutines/initializeFacetracking";
-
+import { MovementDirections } from "./types/MovementTypes";
+import { CustomGameEvents, GameControlEvent } from "./types/Events";
 const boatElement = "resources/models/fishing_boat/scene.gltf";
 const skyBoxTexture = "resources/textures/skyboxes/darkcartoon.jpeg";
 const gltfLoader = new GLTFLoader();
 
-const debug = false;
+/**
+ * This is the very long "main routine" file
+ * */
 
-/** Movement */
-const startSpeed = 0.5;
-const maxSpeed = 20;
-let movementSpeed = 10;
-let acceleration = 0.05;
-let moving = false;
+/** Game State */
+let gameStarted = false;
+
+/** Dev options */
+/** This var allows debug information to be shown */
+let debug = false;
+
+/** Store the control inputs.*/
 let currentMovementDirections: MovementDirections = {
   Left: false,
   Right: false,
   Forwards: false,
-  Backwards: false,
 };
 
 /** Spawning */
@@ -46,8 +49,8 @@ let enemyCollidersArray: THREE.Sphere[] = [];
 let lives = 3;
 let collisionDebouncer = false;
 
+/** Scene init */
 const scene = new THREE.Scene();
-
 let camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -61,6 +64,7 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
 });
 
+/** Set renderer to match device*/
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 const cameraOffset = new Vector3(-0.05, 7, 13); // NOTE Constant offset between the camera and the target
@@ -68,29 +72,35 @@ camera.position.set(cameraOffset.x, cameraOffset.y, cameraOffset.z);
 scene.add(camera);
 
 /** HELPERS */
+/** Used fot debugging */
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-const gridHelper = new THREE.GridHelper(200, 50);
-const axesHelper = new THREE.AxesHelper(5);
-if (debug) scene.add(gridHelper, axesHelper);
+if (debug) {
+  const gridHelper = new THREE.GridHelper(200, 50);
+  const axesHelper = new THREE.AxesHelper(5);
+  scene.add(gridHelper, axesHelper);
+}
 
 /** LIGHTING */
+/** Add main light source as well as debug helpers */
 const directionalLight = new THREE.DirectionalLight("#ffeac0", 0.9);
-const helper = new THREE.DirectionalLightHelper(directionalLight, 5);
 directionalLight.castShadow = true;
 directionalLight.position.set(5, 10, 3);
 directionalLight.rotation.set(0.5, 0, -0.5);
 scene.add(directionalLight);
-if (debug) scene.add(helper);
+if (debug) {
+  const helper = new THREE.DirectionalLightHelper(directionalLight, 5);
+  scene.add(helper);
+}
 
-const ambientLight = new THREE.AmbientLight("#ffffff", 0.2);
+/** ambient light to illuminate everything at least a little bit */
+const ambientLight = new THREE.AmbientLight("#ffffff", 0.4);
 scene.add(ambientLight);
 
 /** SETUP floor */
 scene.add(createFloorTile());
 
 /** Setup Skybox*/
-
 const loader = new THREE.TextureLoader();
 const texture = loader.load(skyBoxTexture, () => {
   const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
@@ -98,17 +108,21 @@ const texture = loader.load(skyBoxTexture, () => {
   scene.background = rt.texture;
 });
 
-/** Create Boat model */
+/** Create Boat group
+ * The boat group consists of the boat and an invisible collider box */
+let boatGroup = new THREE.Group();
+/** Add invisible bounding box to boat. This will allow the collision logic between the boat and the "enemy" elements */
 const boatCube = new Mesh(
   new BoxGeometry(2.3, 5, 6),
   new MeshLambertMaterial({ wireframe: debug, visible: false })
 );
-
 const boatBoundingBox = new Box3(new Vector3(), new Vector3());
+/** take the outermost points of the boat as the box size */
 boatBoundingBox.setFromObject(boatCube);
-let boatModel: any; // gltf
-let boatGroup = new THREE.Group();
 boatGroup.add(boatCube);
+
+/** Init boat 3d model */
+let boatModel: any; // gltf
 gltfLoader.load(
   boatElement,
   (gltf: any) => {
@@ -122,8 +136,7 @@ gltfLoader.load(
     console.error(error);
   }
 );
-
-boatGroup.position.set(0, 0, -10);
+boatGroup.position.set(0, 0, -5);
 
 scene.add(boatGroup);
 
@@ -135,7 +148,6 @@ boatGroup.add(pointLight);
 if (debug) scene.add(pointLightHelper);
 
 /** Heart model */
-
 let heartModel1: any;
 let heartModel2: any;
 let heartModel3: any;
@@ -156,58 +168,14 @@ createHearts(2.4, (heartModelNew) => {
   camera.add(heartModel3);
 });
 
-const movementHandler = (evt: KeyboardEvent, dir: "up" | "dn") => {
-  const movementCopy = { ...currentMovementDirections };
 
-  switch (evt.key) {
-    case "s":
-      movementCopy.Backwards = dir === "dn";
-      break;
-    case "w":
-      movementCopy.Forwards = dir === "dn";
-      break;
-    case "q":
-      rotLeft();
-      break;
-    case "e":
-      rotRight();
-      break;
-    case "a":
-      movementCopy.Left = dir === "dn";
-      break;
-    case "d":
-      movementCopy.Right = dir === "dn";
-
-      break;
-    case "f":
-      break;
-  }
-
-  currentMovementDirections = movementCopy;
-};
-
-const rotLeft = () => {
-  boatGroup.rotation.y += Math.PI / 60;
-};
-
-const rotRight = () => {
-  boatGroup.rotation.y -= Math.PI / 60;
-};
-
-const accelerateMovementSpeed = () => {
-  if (moving) {
-    if (movementSpeed <= maxSpeed) {
-      movementSpeed += acceleration;
-    }
-  } else {
-    movementSpeed = startSpeed;
-  }
-};
 
 const spawnEnemies = () => {
+  /** create enemies and their corresponding colliders */
   const elapsed = clock.getElapsedTime();
   if (elapsed - spawnDelay > lastSpawn) {
     const collisionElements = addCollisionElements(boatGroup);
+
     scene.add(collisionElements.collisionElements);
     enemyCollidersArray = [
       ...enemyCollidersArray,
@@ -222,112 +190,101 @@ const spawnEnemies = () => {
 };
 
 const checkCollision = () => {
+  /** Collision logic, we need to debounce the collision, as the collision boxes may intersect for more time then just one frame.
+   * So trigger the event once the collision happens, but only retrigger it, if the collision is no longer happening */
   const foundCollision = enemyCollidersArray.find((enemy) => {
     return enemy.intersectsBox(boatBoundingBox);
   });
 
   if (foundCollision) {
     if (!collisionDebouncer) {
-      console.log("ALARM");
       collisionDebouncer = true;
-      switch (lives) {
-        case 3:
-          camera.remove(heartModel3);
-          break;
-        case 2:
-          camera.remove(heartModel2);
-          break;
-        case 1:
-          camera.remove(heartModel1);
-          break;
-      }
-
-      lives -= 1;
+      document.dispatchEvent(new CustomEvent(CustomGameEvents.EnemyCollision));
     }
   } else {
     collisionDebouncer = false;
   }
 };
 
-const init = () => {
-  clock.start();
-  window.addEventListener("keydown", (e) => movementHandler(e, "dn"), false);
-  window.addEventListener(
-    "keyup",
-    (e) => {
-      movementHandler(e, "up");
-    },
-    false
-  );
+const handleCollisionEvent = () => {
+  /** remove "lives" */
+  switch (lives) {
+    case 3:
+      camera.remove(heartModel3);
+      break;
+    case 2:
+      camera.remove(heartModel2);
+      break;
+    case 1:
+      camera.remove(heartModel1);
+      document.dispatchEvent(new CustomEvent(CustomGameEvents.GameOver));
+      break;
+  }
+  lives -= 1;
+};
 
-  // Type should be CustomEvent, but isn'T recognized correctly
-  document.addEventListener("trackedMovement", (e: any) => {
-    console.log("event caught");
-    console.log("e", e);
-    const movementCopy = { ...currentMovementDirections };
+const handleControlEvent = (event: GameControlEvent) => {
+  /** store movement inputs in the corresponding object */
+  const movementCopy = { ...currentMovementDirections };
+  switch (event.detail.dir) {
+    case "Left":
+      movementCopy.Left = true;
+      break;
+    case "Right":
+      movementCopy.Right = true;
+      break;
+    default:
+      movementCopy.Left = false;
+      movementCopy.Right = false;
+      break;
+  }
+  currentMovementDirections = movementCopy;
+};
 
-    switch (e.detail.dir) {
-      case "left":
-        movementCopy.Left = true;
-        break;
-      case "right":
-        movementCopy.Right = true;
-        break;
-      default:
-        movementCopy.Left = false;
-        movementCopy.Right = false;
-        break;
-    }
-    currentMovementDirections = movementCopy;
+const initEventListeners = () => {
+  /** Since we dont have proper state management and have to utilize the "great" closure principles of vanilla JS,
+   * I choose to use custom events to communicate the different states */
+
+  document.addEventListener(CustomGameEvents.StartGame, () => {
+    // @ts-ignore typescript thinks that the property could be null. This is impossible. No time for better typing
+    document.getElementById("startDialogWrapper").style.display = "none";
+    gameStarted = true;
   });
 
-  const leftButton = document.getElementById("leftButton");
-  if (leftButton) {
-    leftButton.ontouchstart = () => {
-      const movementCopy = { ...currentMovementDirections };
-      movementCopy.Left = true;
-      currentMovementDirections = movementCopy;
-    };
-    leftButton.ontouchend = () => {
-      const movementCopy = { ...currentMovementDirections };
-      movementCopy.Left = false;
-      currentMovementDirections = movementCopy;
-    };
-    leftButton.ontouchcancel = () => {
-      const movementCopy = { ...currentMovementDirections };
-      movementCopy.Left = false;
-      currentMovementDirections = movementCopy;
-    };
-  }
+  document.addEventListener(CustomGameEvents.GameOver, () => {
+    // @ts-ignore typescript thinks that the property could be null. This is impossible. No time for better typing#
+    document.getElementById("gameOverWrapper").style.display = "flex";
+    gameStarted = false;
+  });
 
-  const rightButton = document.getElementById("rightButton");
-  if (rightButton) {
-    rightButton.ontouchstart = () => {
-      const movementCopy = { ...currentMovementDirections };
-      movementCopy.Right = true;
-      currentMovementDirections = movementCopy;
-    };
-    rightButton.ontouchend = () => {
-      const movementCopy = { ...currentMovementDirections };
-      movementCopy.Right = false;
-      currentMovementDirections = movementCopy;
-    };
-    rightButton.ontouchcancel = () => {
-      const movementCopy = { ...currentMovementDirections };
-      movementCopy.Right = false;
-      currentMovementDirections = movementCopy;
-    };
-  }
+  document.addEventListener(CustomGameEvents.EnemyCollision, () => {
+    handleCollisionEvent();
+  });
+
+  document.addEventListener(CustomGameEvents.ControlInput, (e: Event) => {
+    /* Typing events is tricky. Should have implemented a generic, but didnt have time.
+       To improve readability, i typecast to GameControlEvent.
+    */
+    handleControlEvent(e as GameControlEvent);
+  });
 };
 
 const animate = () => {
   requestAnimationFrame(animate);
-
   boatModel = updateBoatSway(boatModel);
-  boatGroup = updateBoatRoutine(boatGroup, currentMovementDirections);
-  camera = updateCameraPos(camera);
+
+  if (gameStarted) {
+    boatGroup = updateBoatRoutine(boatGroup, currentMovementDirections);
+    camera = updateCameraPos(camera, boatGroup);
+    spawnEnemies();
+    checkCollision();
+  }
+
   // @ts-ignore
-  controls.target.copy({ ...boatGroup.position, y: boatGroup.position.y + 7 });
+  controls.target.copy({
+    ...boatGroup.position,
+    y: boatGroup.position.y + 7,
+  });
 
   if (boatCube.geometry.boundingBox instanceof Box3) {
     boatBoundingBox
@@ -335,14 +292,13 @@ const animate = () => {
       .applyMatrix4(boatCube.matrixWorld);
   }
 
-  spawnEnemies();
-  checkCollision();
-  TWEEN.update();
-
-  accelerateMovementSpeed();
   controls.update();
   renderer.render(scene, camera);
 };
 
-init();
+// Start routines
+clock.start();
+
+loadCollisionEnemyMeshes();
+initEventListeners();
 animate();

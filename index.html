@@ -3,29 +3,85 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>HAW-Benjamins</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <main>
-      <div id="faceTrackingWrapperContainer">
-      <div id="faceTrackingWrapper">
-        <canvas id="faceTrackingCanvas"></canvas>
-        <!--- TODO: compute Video Size on runtime -->
-        <video id="faceTrackingVideo" autoplay muted playsinline></video>
-      </div></div>
-      <canvas id="bgCanvas"></canvas>
-      <div id="cssWrapper">
-        <div id="debugSection">debug:</div>
-        aad
-        <div id="controlsWrapper">
-          <button id="leftButton" class="controlButton"></button>
-          <button id="rightButton" class="controlButton"></button>
+      <div class="startDialogWrapper" id="startDialogWrapper">
+        <div class="startDialogContentWrapper">
+          <div class="startDialog">
+            <p class="startDialogTitle">Waterways</p>
+            <p class="startDialogText">
+              Oh no! A container ship sank and spilled rubber ducks and beer
+              cans all over the ocean. Drive your fishing boat home safely and
+              avoid getting hit.
+            </p>
+
+            <button
+              id="startGameButton"
+              class="button-3"
+              onclick="handleStartGame()"
+            >
+              Start Game
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="startDialogWrapper" id="gameOverWrapper">
+        <div class="startDialogContentWrapper">
+          <div class="startDialog">
+            <p class="startDialogTitle">Game Over</p>
+            <p class="startDialogText">
+              You hit too many objects so your boat sank :(
+            </p>
+
+            <button
+              id="restartGameButton"
+              class="button-3"
+              onclick="restartGame()"
+            >
+              Restart Game
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="gameWrapper">
+        <div id="faceTrackingWrapperContainer">
+          <div id="faceTrackingWrapper">
+            <canvas id="faceTrackingCanvas"></canvas>
+            <!--- TODO: compute Video Size on runtime -->
+            <video id="faceTrackingVideo" autoplay muted playsinline></video>
+          </div>
+        </div>
+        <canvas id="bgCanvas"></canvas>
+        <div id="cssWrapper">
+          <div id="debugSection"></div>
         </div>
       </div>
       <div id="app"></div>
     </main>
+    <script>
+      const handleStartGame = () => {
+        /** Dispatch event from here rather then accessing the variable in a different file.
+         * Closure in JS... not even once... */
+        document.dispatchEvent(new CustomEvent("StartGame"));
+      };
+      const restartGame = () => {
+        location.reload();
+      };
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

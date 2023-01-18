@@ -1,5 +1,8 @@
 import * as faceapi from "face-api.js";
+import { CustomGameEvents } from "../types/Events";
+import { Directions } from "../types/MovementTypes";
 
+/** init user agent check */
 const onMobile =
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
@@ -13,9 +16,18 @@ let faceTrackingCanvas: HTMLCanvasElement = document.getElementById(
   "faceTrackingCanvas"
 ) as HTMLCanvasElement;
 
+/** Init bounding coordinates. These store the pixel threshold,
+ * which decides if the tracked face is in a "left" or "right" control area */
 let canvasRightBoundingCoordinate = 0;
 let canvasLeftBoundingCoordinate = 0;
 
+/** load ML Models. Theoretically only the tinyDaceDetector would be necessary,
+ * but I want to try to use the nose for steering instead.
+ * During testing i found the user would often tilt the head, rather then move it side to side.
+ * This means that the nose should be the leading point.
+ * The promise.all waits for everything to be loaded and executes the "then" case after that.
+ * TODO: remove unused models
+ * */
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri("/resources/mlModels"),
   faceapi.nets.faceLandmark68Net.loadFromUri("/resources/mlModels"),
@@ -24,13 +36,19 @@ Promise.all([
 ]).then(startVideo);
 
 function startVideo() {
-  console.log("navigator", navigator);
+  /** Init video function.
+   * Since the page loads asynchronously, the video stream cant just be set up from the get go.
+   * We have to wait for the user to allow the camera access for example. */
   navigator.mediaDevices
     .getUserMedia({ video: {} })
     .then((stream) => {
+      // stream gotten successfully
       if (video) {
         video.srcObject = stream;
-        console.log("video", video);
+        /** Check whether the device is mobile.
+         * the approach doesn't work properly, as the mobile video is often 9:16 instead of 16:9.
+         * TODO: A better approach would be to crop to square eiter way.
+         */
         if (window.innerHeight > window.innerWidth || onMobile) {
           video.width = window.innerWidth;
         } else {
@@ -44,6 +62,7 @@ function startVideo() {
 const drawFaceBoundingBoxCustom = (resizeResults: any) => {
   const ctx = faceTrackingCanvas?.getContext("2d");
 
+  /** currently, the face center is used as the control trigger */
   let faceCenterX: number | null = null;
   let faceCenterY: number | null = null;
   let moveLeft = false;
@@ -55,16 +74,20 @@ const drawFaceBoundingBoxCustom = (resizeResults: any) => {
      important: the canvas is mirrored to correspond with the video also being mirrored */
     if (resizeResults[0]) {
       const box = resizeResults[0].alignedRect._box;
+      // I was planning to implement the "sad" expression as another control input.
       const sadDetected = resizeResults[0].expressions.sad;
       const boxColor = sadDetected > 0.85 ? "red" : "green";
+      // calc face center
       faceCenterX = box._x + box._width / 2;
       faceCenterY = box._y + box._height / 2;
+      // draw box
       ctx.beginPath();
       ctx.lineWidth = 3;
       ctx.strokeStyle = boxColor;
       ctx.rect(box._x, box._y, box._width, box._height);
       ctx.stroke();
 
+      // draw center dot
       ctx.beginPath();
       ctx.lineWidth = 3;
       ctx.strokeStyle = "blue";
@@ -99,11 +122,18 @@ const drawFaceBoundingBoxCustom = (resizeResults: any) => {
     );
     ctx.stroke();
 
-    let dir = "none";
-    if (moveRight) dir = "right";
-    if (moveLeft) dir = "left";
+    let dir: Directions = "Forwards";
+    if (moveRight) dir = "Right";
+    if (moveLeft) dir = "Left";
 
-    let event = new CustomEvent("trackedMovement", {
+    /** Due to the lack of good closure, I decided to dispatch custom events in the
+     * lifecycle functions to allow communication between the facetracking and game loops.
+     *
+     * This approach makes the facetracking a completely separate system, and lets it act as a "generic" user input.
+     * If the game should instead be controlled by a keyboard, or touch controls. We could just replace the facetracking function
+     * with a different one which just dispatches the same event.
+     * */
+    let event = new CustomEvent(CustomGameEvents.ControlInput, {
       detail: { dir },
     });
     document.dispatchEvent(event);
@@ -125,11 +155,16 @@ video.addEventListener("playing", () => {
   canvasLeftBoundingCoordinate = faceTrackingCanvas.width * 0.55;
 
   setInterval(async () => {
+    /** set the an interval of 100ms, and ask faceApi to run the detections.
+     * faceApi gives preprogrammed bounding boxes for the different landmarks,
+     * but i decided to write my own drawing function, as I need to mirror the image anyways
+     */
     const detections = await faceapi
       .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
       .withFaceLandmarks()
       .withFaceExpressions();
     const resizedDetections = faceapi.resizeResults(detections, displaySize);
+    // pass to custom draw func.
     drawFaceBoundingBoxCustom(resizedDetections);
     // faceapi.draw.drawDetections(faceTrackingCanvas, resizedDetections);
     // faceapi.draw.drawFaceLandmarks(faceTrackingCanvas, resizedDetections);

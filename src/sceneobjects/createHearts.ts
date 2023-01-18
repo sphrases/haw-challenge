@@ -3,6 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 const gltfLoader = new GLTFLoader();
 const heartElement = "resources/models/heart/scene.gltf";
 
+/** This function will load and create the three heart models. Since the closure problems of JS exist, I decided to try passing a callback function  */
 const createHearts = (offset: number, callback: (heartModelCB: any) => void) => {
   gltfLoader.load(
     heartElement,

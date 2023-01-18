@@ -1,0 +1,53 @@
+/* CSS */
+/** button template used: https://getcssscan.com/css-buttons-examples */
+.button-3 {
+  appearance: none;
+  background-color: #79f8ff;
+  border: none;
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, 0.1) 0 1px 0;
+  box-sizing: border-box;
+  color: #0D436A;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.button-3:focus:not(:focus-visible):not(.focus-visible) {
+  box-shadow: none;
+  outline: none;
+}
+
+.button-3:hover {
+  background-color: #74eaf1;
+}
+
+.button-3:focus {
+  box-shadow: #4b9196 0 0 0 3px;
+  outline: none;
+}
+
+.button-3:disabled {
+  background-color: rgba(148, 211, 162, 0.2);
+  border-color: rgba(27, 31, 35, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: default;
+}
+
+.button-3:active {
+  background-color: #79f8ff;
+  box-shadow: rgba(75, 145, 150, 0.2) 0 1px 0 inset;
+}
