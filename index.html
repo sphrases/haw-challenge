@@ -26,7 +26,6 @@
               cans all over the ocean. Drive your fishing boat home safely and
               avoid getting hit.
             </p>
-
             <button
               id="startGameButton"
               class="button-3"
@@ -45,7 +44,9 @@
             <p class="startDialogText">
               You hit too many objects so your boat sank :(
             </p>
-
+            <p class="startDialogText">
+              Your score is <span id="scoreSectionGameOver"></span>
+            </p>
             <button
               id="restartGameButton"
               class="button-3"
@@ -68,6 +69,7 @@
         <canvas id="bgCanvas"></canvas>
         <div id="cssWrapper">
           <div id="debugSection"></div>
+          <div id="scoreSection"></div>
         </div>
       </div>
       <div id="app"></div>

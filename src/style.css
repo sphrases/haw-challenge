@@ -15,12 +15,20 @@ body {
 }
 
 #startDialogWrapper {
-  display: none;
+  display: flex;
 }
 
 #gameOverWrapper {
-  display: flex;
+  display: none;
 }
+
+#scoreSection {
+  color: #e1f7ff;
+  font-size: 32px;
+  margin: 20px;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
 
 .startDialogWrapper {
   z-index: 2000;

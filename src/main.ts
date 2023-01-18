@@ -17,6 +17,7 @@ import updateBoatRoutine, {
 import "./sideRoutines/initializeFacetracking";
 import { MovementDirections } from "./types/MovementTypes";
 import { CustomGameEvents, GameControlEvent } from "./types/Events";
+import { printScore } from "./sideRoutines/helperFunc";
 const boatElement = "resources/models/fishing_boat/scene.gltf";
 const skyBoxTexture = "resources/textures/skyboxes/darkcartoon.jpeg";
 const gltfLoader = new GLTFLoader();
@@ -27,6 +28,7 @@ const gltfLoader = new GLTFLoader();
 
 /** Game State */
 let gameStarted = false;
+let score = 0;
 
 /** Dev options */
 /** This var allows debug information to be shown */
@@ -168,8 +170,6 @@ createHearts(2.4, (heartModelNew) => {
   camera.add(heartModel3);
 });
 
-
-
 const spawnEnemies = () => {
   /** create enemies and their corresponding colliders */
   const elapsed = clock.getElapsedTime();
@@ -252,9 +252,15 @@ const initEventListeners = () => {
   });
 
   document.addEventListener(CustomGameEvents.GameOver, () => {
-    // @ts-ignore typescript thinks that the property could be null. This is impossible. No time for better typing#
-    document.getElementById("gameOverWrapper").style.display = "flex";
+    boatModel.translateY(-5);
     gameStarted = false;
+
+    setTimeout(() => {
+      // @ts-ignore typescript thinks that the property could be null. This is impossible. No time for better typing#
+      document.getElementById("gameOverWrapper").style.display = "flex";
+      // @ts-ignore
+      document.getElementById("scoreSectionGameOver").innerHTML = score;
+    }, 500);
   });
 
   document.addEventListener(CustomGameEvents.EnemyCollision, () => {
@@ -278,6 +284,8 @@ const animate = () => {
     camera = updateCameraPos(camera, boatGroup);
     spawnEnemies();
     checkCollision();
+    printScore(score);
+    score += 1;
   }
 
   // @ts-ignore
