@@ -13,10 +13,10 @@ To keep the project flexible, I decided to split the game logic and the control 
 The game just receives input from either the keyboard, or later the face tracking. This part is separated from the game logic, and dispatches events, that the game logic can then react to. 
 The Web page can also dispatch events, like the "start game" event. Some parts of the game will dispatch events back to the game logic, for example the enemy collision.
 
+*Mini architecture: *
 
 ![mini_architecture](https://user-images.githubusercontent.com/11139334/215138129-f231790e-353c-4ba5-acb9-4a325d7fb440.png)
 
-*Mini architecture*
 
 
 
