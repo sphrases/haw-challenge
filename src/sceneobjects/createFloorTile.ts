@@ -4,7 +4,8 @@ import {
   MeshStandardMaterial,
   PlaneGeometry,
   RepeatWrapping,
-  TextureLoader, Vector2,
+  TextureLoader,
+  Vector2,
 } from "three";
 
 const waterTexture = "resources/textures/Water_001_SD/Water_001_COLOR.jpg";
@@ -36,18 +37,17 @@ const createFloorTile = () => {
     displacementMap: displacementMap,
     displacementScale: 0.4,
     normalMap: normalMap,
-    normalScale: new Vector2(.7, 3)
+    normalScale: new Vector2(0.1, 3),
   });
 
   let mesh = new Mesh(planeGeometry, material);
 
   /** mesh needs to be laid flat and offset below the other models*/
-  mesh.position.set(0, -0.2, 0);
+  mesh.position.set(0, -0.1, 0);
   mesh.rotation.set(Math.PI / -2, 0, 0);
 
   return mesh;
 };
-
 
 /** Currently not used/broken
  * I initially planned to use a spritesheet as the floor tile to have animated water.
