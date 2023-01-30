@@ -58,7 +58,7 @@ The trigger based approach, like keeping a button pressed either on or of, could
 The trigger steering makes small maneuvers difficult, as the user has to "press" the trigger zone really quickly. 
 If the distance from the center relates to the speed, the user can make small adjustments.
 
-Basing the project on pure TypeScript did seem like a good idea initially, but the shortcomings of pure JavaScript were too severe. 
+Basing the project on pure TypeScript did seem like a good idea initially, but the shortcomings of JavaScript were too severe. 
 State management is very difficult, since the variables are spread over several files, programming paradigms like functional programming were basically impossible and 
 three.js is built in an outdated way. 
 Should I build a three.js application again, I would definitely use a framework like Reactjs or Vuejs to have a component based element tree and a solid state management.
