@@ -17,7 +17,8 @@ The Web page can also dispatch events, like the "start game" event. Some parts o
 
 *Mini architecture:*
 
-![mini_architecture](https://user-images.githubusercontent.com/11139334/215138129-f231790e-353c-4ba5-acb9-4a325d7fb440.png)
+![mini_architecture](https://user-images.githubusercontent.com/11139334/215481929-5f16a102-903f-4a0d-bbc3-fa96879f5b6a.png)
+
 
 
 
