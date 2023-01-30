@@ -2,6 +2,8 @@
 
 Visit at [abenjamins.com](https://abenjamins.com)
 
+Or clone the repository, run `npm install` and then `npm run dev` ([nodejs](https://nodejs.org/en/) is required to run this project)
+
 [Short Video Demo](https://youtu.be/Jc0bpVLJDlg)
 
 This is my entry as the programming task for the digital reality masters programme at the HAW.
