@@ -1,6 +1,6 @@
 ## HAW Challenge
 
-Visit under [abenjamins.com](https://abenjamins.com)
+Visit at [abenjamins.com](https://abenjamins.com)
 
 [Short Video Demo](https://youtu.be/Jc0bpVLJDlg)
 
