@@ -2,6 +2,8 @@
 
 Visit under [abenjamins.com](abenjamins.com)
 
+[Short Video Demo](https://youtu.be/Jc0bpVLJDlg)
+
 This is my entry as the programming task for the digital reality masters programme at the HAW.
 
 
